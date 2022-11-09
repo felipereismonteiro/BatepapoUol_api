@@ -26,4 +26,10 @@ app.get("/messages", (req, res) => {
   //Precisa filtrar as mensagens privadas para que apenas o usuario enviado receba
 });
 
+app.post("/messages", (req, res) => {
+  db.collection("messages").insertOne(req.body).then(() => {
+    res.sendStatus(201)
+  })
+});
+
 app.listen(5000, () => console.log("Server running on port: 5000"));
