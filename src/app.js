@@ -23,8 +23,7 @@ app.get("/messages", (req, res) => {
     return res.send(mensagens.slice(0, limit ? limit : mensagens.length));
   });
 
-  // res.send(`Enviando ${limit} mensagens`);
-  // Envie apenas as mensagens que aquele usuario pode receber
+  //Precisa filtrar as mensagens privadas para que apenas o usuario enviado receba
 });
 
 app.listen(5000, () => console.log("Server running on port: 5000"));
