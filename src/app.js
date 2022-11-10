@@ -88,10 +88,6 @@ app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
   const from = req.headers.user;
   const mensagem = { from, to, text, type, time: dayjs().format("MM/DD/YYYY") };
-  const participantes = await dbParticipants
-    .collection("participants")
-    .find()
-    .toArray();
 
   const schema = Joi.object({
     to: Joi.string().required(),
