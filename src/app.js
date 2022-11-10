@@ -32,6 +32,7 @@ app.post("/participants", async (req, res) => {
     name: Joi.string().required(),
     lastStatus: Joi.required(),
   });
+
   const participantes = await dbParticipants
     .collection("participants")
     .find()
@@ -84,11 +85,36 @@ app.get("/messages", async (req, res) => {
 });
 
 app.post("/messages", async (req, res) => {
+  const { to, text, type } = req.body;
+  const from = req.headers.user;
+  const mensagem = { from, to, text, type, time: dayjs().format("MM/DD/YYYY") };
+  const participantes = await dbParticipants
+    .collection("participants")
+    .find()
+    .toArray();
+
+  const schema = Joi.object({
+    to: Joi.string().required(),
+    text: Joi.string().required(),
+    from: Joi.string().required(),
+    type: Joi.string().valid("message", "private_message").required(),
+    time: Joi.required(),
+  });
+
   try {
-    await dbMessages.collection("messages").insertOne(req.body);
+    const participante = await dbParticipants
+      .collection("participants")
+      .find({ name: from })
+      .toArray();
+    const validate = await schema.validateAsync({
+      ...mensagem,
+      from: participante.length === 1 && from
+    });
+
+    await dbMessages.collection("messages").insertOne(validate);
     res.sendStatus(201);
   } catch (err) {
-    res.sendStatus(400);
+    res.status(422).send(err.details[0].message);
   }
 });
 
