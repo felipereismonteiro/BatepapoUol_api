@@ -107,12 +107,14 @@ app.get("/messages", async (req, res) => {
 
   try {
     const mensagens = await dbMessages.collection("messages").find().toArray();
-    res.send(mensagens.filter(m => m.to === usuario || m.to === "Todos").slice(0, limite ? limite : mensagens.length));
+    res.send(
+      mensagens
+        .filter((m) => m.to === usuario || m.to === "Todos")
+        .slice(0, limite ? limite : mensagens.length)
+    );
   } catch (err) {
     console.log(err);
   }
-
-  //Precisa filtrar as mensagens privadas para que apenas o usuario enviado receba
 });
 
 app.listen(5000, () => console.log("Server running on port: 5000"));
