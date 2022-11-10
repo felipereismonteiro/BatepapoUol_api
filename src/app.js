@@ -17,10 +17,9 @@ db = mongoClient.db("messages");
 
 app.get("/messages", async (req, res) => {
   const limite = req.query.limit;
-  const buscandoMensagens = db.collection("messages").find().toArray();
 
   try {
-    const mensagens = await buscandoMensagens
+    const mensagens = await db.collection("messages").find().toArray();
     res.send(mensagens.slice(0, limite ? limite : mensagens.length));
   } catch (err) {
     console.log(err)
