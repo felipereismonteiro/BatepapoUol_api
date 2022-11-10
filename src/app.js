@@ -71,19 +71,6 @@ app.get("/participants", async (req, res) => {
   }
 });
 
-app.get("/messages", async (req, res) => {
-  const limite = req.query.limit;
-
-  try {
-    const mensagens = await dbMessages.collection("messages").find().toArray();
-    res.send(mensagens.slice(0, limite ? limite : mensagens.length));
-  } catch (err) {
-    console.log(err);
-  }
-
-  //Precisa filtrar as mensagens privadas para que apenas o usuario enviado receba
-});
-
 app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
   const from = req.headers.user;
@@ -112,6 +99,20 @@ app.post("/messages", async (req, res) => {
   } catch (err) {
     res.status(422).send(err.details[0].message);
   }
+});
+
+app.get("/messages", async (req, res) => {
+  const limite = req.query.limit;
+  const usuario = req.headers.user;
+
+  try {
+    const mensagens = await dbMessages.collection("messages").find().toArray();
+    res.send(mensagens.filter(m => m.to === usuario || m.to === "Todos").slice(0, limite ? limite : mensagens.length));
+  } catch (err) {
+    console.log(err);
+  }
+
+  //Precisa filtrar as mensagens privadas para que apenas o usuario enviado receba
 });
 
 app.listen(5000, () => console.log("Server running on port: 5000"));
