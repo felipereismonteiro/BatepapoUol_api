@@ -11,12 +11,10 @@ app.use(cors());
 app.use(express.json());
 
 const mongoClient = new MongoClient(process.env.MONGO_URI);
-let dbMessages;
-let dbParticipants;
+let db;
 
 await mongoClient.connect();
-dbMessages = mongoClient.db("messages");
-dbParticipants = mongoClient.db("participants");
+db = mongoClient.db("messages");
 
 app.post("/participants", async (req, res) => {
   const { name } = req.body;
@@ -33,8 +31,8 @@ app.post("/participants", async (req, res) => {
     lastStatus: Joi.required(),
   });
 
-  const participantes = await dbParticipants
-    .collection("participants")
+  const participantes = await db
+    .collection("messages")
     .find()
     .toArray();
 
@@ -49,8 +47,8 @@ app.post("/participants", async (req, res) => {
       return res.sendStatus(409);
     }
 
-    await dbParticipants.collection("participants").insertOne(usuario);
-    await dbParticipants.collection("participants").insertOne(mensagemEntrada);
+    await db.collection("messages").insertOne(usuario);
+    await db.collection("messages").insertOne(mensagemEntrada);
 
     res.sendStatus(201);
   } catch (err) {
@@ -61,11 +59,11 @@ app.post("/participants", async (req, res) => {
 
 app.get("/participants", async (req, res) => {
   try {
-    const participantes = await dbParticipants
-      .collection("participants")
+    const participantes = await db
+      .collection("messages")
       .find()
       .toArray();
-    res.send(participantes);
+    res.send(participantes.filter(p => p.name));
   } catch (err) {
     console.log(err);
   }
@@ -74,7 +72,7 @@ app.get("/participants", async (req, res) => {
 app.post("/messages", async (req, res) => {
   const { to, text, type } = req.body;
   const from = req.headers.user;
-  const mensagem = { from, to, text, type, time: dayjs().format("MM/DD/YYYY") };
+  const mensagem = { from, to, text, type, time: dayjs().format("DD/MM/YYYY") };
 
   const schema = Joi.object({
     to: Joi.string().required(),
@@ -85,8 +83,8 @@ app.post("/messages", async (req, res) => {
   });
 
   try {
-    const participante = await dbParticipants
-      .collection("participants")
+    const participante = await db
+      .collection("messages")
       .find({ name: from })
       .toArray();
     const validate = await schema.validateAsync({
@@ -94,7 +92,7 @@ app.post("/messages", async (req, res) => {
       from: participante.length === 1 && from
     });
 
-    await dbMessages.collection("messages").insertOne(validate);
+    await db.collection("messages").insertOne(validate);
     res.sendStatus(201);
   } catch (err) {
     res.status(422).send(err.details[0].message);
@@ -106,7 +104,7 @@ app.get("/messages", async (req, res) => {
   const usuario = req.headers.user;
 
   try {
-    const mensagens = await dbMessages.collection("messages").find().toArray();
+    const mensagens = await db.collection("messages").find().toArray();
     res.send(
       mensagens
         .filter((m) => m.to === usuario || m.to === "Todos")
