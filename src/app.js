@@ -107,15 +107,13 @@ app.get("/messages", async (req, res) => {
     const mensagens = await db.collection("messages").find().toArray();
     res.send(
       mensagens
-        .filter((m) => (m.to === usuario || m.to === "Todos" || m.from === usuario) && (m.type !== "status") )
+        .filter((m) => (m.to === usuario || m.to === "Todos" || m.from === usuario))
         .slice(0, limite ? limite : mensagens.length)
     );
   } catch (err) {
     console.log(err);
   }
 });
-
-// 1668108824298
 
 app.post("/status", async (req, res) => {
   const participante = req.headers.user
@@ -139,9 +137,10 @@ app.post("/status", async (req, res) => {
   
         participantesFiltrados.forEach(async (element) => {
           if(Date.now() - element.lastStatus >= 10000) {
-            db.collection("messages").deleteOne({"_id": element._id});
+            await db.collection("messages").deleteOne({"_id": element._id});
+            await db.collection("messages").insertOne({from: element.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs().format("DD/MM/YYYY")})
           }
-        });
+        }); 
     }, 15000);
 
     res.sendStatus(200);
