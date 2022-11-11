@@ -107,7 +107,7 @@ app.get("/messages", async (req, res) => {
     const mensagens = await db.collection("messages").find().toArray();
     res.send(
       mensagens
-        .filter((m) => m.to === usuario || m.to === "Todos" || m.to === m.to)
+        .filter((m) => (m.to === usuario || m.to === "Todos" || m.from === usuario) && (m.type !== "status") )
         .slice(0, limite ? limite : mensagens.length)
     );
   } catch (err) {
