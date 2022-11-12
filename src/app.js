@@ -200,10 +200,9 @@ app.put("/messages/:id", async (req, res) => {
       return res.sendStatus(401);
     }
 
-    const validate = await schemaPut.validateAsync(body, { abortEarly: false });
-    console.log(validate)
+    await schemaPut.validateAsync(body, { abortEarly: false });
 
-    console.log(db.collection("messages").updateOne({_id: ObjectId(id)}, {$set: req.body}))
+    db.collection("messages").updateOne({_id: ObjectId(id)}, {$set: req.body})
     return res.sendStatus(200);
 
   } catch (err) {  
