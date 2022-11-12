@@ -111,7 +111,9 @@ app.get("/messages", async (req, res) => {
         .filter(
           (m) => m.to === usuario || m.to === "Todos" || m.from === usuario
         )
-        .reverse().slice(0, limite ? limite : mensagens.length).reverse()
+        .reverse()
+        .slice(0, limite ? limite : mensagens.length)
+        .reverse()
     );
   } catch (err) {
     console.log(err);
@@ -189,7 +191,8 @@ app.put("/messages/:id", async (req, res) => {
       .findOne({ name: user });
     const mensagemExiste = await db
       .collection("messages")
-      .find({ _id: ObjectId(id) }).toArray();
+      .find({ _id: ObjectId(id) })
+      .toArray();
 
     if (!participanteExistente || mensagemExiste.length === 0) {
       res.sendStatus(404);
@@ -202,10 +205,12 @@ app.put("/messages/:id", async (req, res) => {
 
     await schemaPut.validateAsync(body, { abortEarly: false });
 
-    db.collection("messages").updateOne({_id: ObjectId(id)}, {$set: req.body})
+    db.collection("messages").updateOne(
+      { _id: ObjectId(id) },
+      { $set: req.body }
+    );
     return res.sendStatus(200);
-
-  } catch (err) {  
+  } catch (err) {
     console.log(err);
     res.sendStatus(404);
   }
