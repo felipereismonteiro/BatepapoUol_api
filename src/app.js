@@ -20,6 +20,14 @@ const schemaPut = Joi.object({
   text: Joi.string(),
 });
 
+const schemaPost = Joi.object({
+  to: Joi.string().required(),
+  text: Joi.string().required(),
+  from: Joi.string().required(),
+  type: Joi.string().valid("message", "private_message").required(),
+  time: Joi.required(),
+});
+
 await mongoClient.connect();
 db = mongoClient.db("messages");
 
@@ -75,20 +83,12 @@ app.post("/messages", async (req, res) => {
   const from = req.headers.user;
   const mensagem = { from, to, text, type, time: dayjs().format("DD/MM/YYYY") };
 
-  const schema = Joi.object({
-    to: Joi.string().required(),
-    text: Joi.string().required(),
-    from: Joi.string().required(),
-    type: Joi.string().valid("message", "private_message").required(),
-    time: Joi.required(),
-  });
-
   try {
     const participante = await db
       .collection("messages")
       .find({ name: from })
       .toArray();
-    const validate = await schema.validateAsync({
+    const validate = await schemaPost.validateAsync({
       ...mensagem,
       from: participante.length === 1 && from,
     });
